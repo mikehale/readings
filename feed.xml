@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Readings</title>
+    <link>https://mikehale.github.io/readings/</link>
+    <language>en-us</language>
+    <description>Readings of Machiavelli, the Federalist Papers, and other classic political texts.</description>
+    <itunes:author>Michael Hale</itunes:author>
+    <itunes:block>Yes</itunes:block>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:type>serial</itunes:type>
+    <item>
+      <title>The Prince: Chapters 1–5</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-1-5.mp3" length="28000940" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/chapters-1-5.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 12:00:00 +0000</pubDate>
+      <itunes:duration>00:29:10</itunes:duration>
+      <itunes:episode>1</itunes:episode>
+    </item>
+    <item>
+      <title>The Prince: Chapters 6–9</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-6-9.mp3" length="35396012" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/chapters-6-9.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 13:00:00 +0000</pubDate>
+      <itunes:duration>00:36:52</itunes:duration>
+      <itunes:episode>2</itunes:episode>
+    </item>
+    <item>
+      <title>The Prince: Chapters 10–14</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-10-14.mp3" length="29052716" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/chapters-10-14.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 14:00:00 +0000</pubDate>
+      <itunes:duration>00:30:16</itunes:duration>
+      <itunes:episode>3</itunes:episode>
+    </item>
+    <item>
+      <title>The Prince: Chapters 15–17</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-15-17.mp3" length="12940460" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/chapters-15-17.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 15:00:00 +0000</pubDate>
+      <itunes:duration>00:13:29</itunes:duration>
+      <itunes:episode>4</itunes:episode>
+    </item>
+    <item>
+      <title>The Prince: Chapters 18–19</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-18-19.mp3" length="24377132" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/chapters-18-19.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 16:00:00 +0000</pubDate>
+      <itunes:duration>00:25:24</itunes:duration>
+      <itunes:episode>5</itunes:episode>
+    </item>
+    <item>
+      <title>The Prince: Chapters 20–23</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-20-23.mp3" length="21163052" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/chapters-20-23.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 17:00:00 +0000</pubDate>
+      <itunes:duration>00:22:03</itunes:duration>
+      <itunes:episode>6</itunes:episode>
+    </item>
+    <item>
+      <title>The Prince: Chapters 24–25</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-24-25.mp3" length="9059756" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/chapters-24-25.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 18:00:00 +0000</pubDate>
+      <itunes:duration>00:09:26</itunes:duration>
+      <itunes:episode>7</itunes:episode>
+    </item>
+    <item>
+      <title>The Prince: Chapter 26</title>
+      <description>Machiavelli, The Prince</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/the-prince/z_chapter-26.mp3" length="7190828" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/the-prince/z_chapter-26.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 19:00:00 +0000</pubDate>
+      <itunes:duration>00:07:29</itunes:duration>
+      <itunes:episode>8</itunes:episode>
+    </item>
+    <item>
+      <title>Discourses on Livy: Book I, Chapter 16</title>
+      <description>Machiavelli, Discourses on Livy</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/discourses-on-livy/machiavelli_discourses_i16_orion.mp3" length="6610560" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/discourses-on-livy/machiavelli_discourses_i16_orion.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 20:00:00 +0000</pubDate>
+      <itunes:duration>00:06:53</itunes:duration>
+      <itunes:episode>9</itunes:episode>
+    </item>
+    <item>
+      <title>Federalist No. 1</title>
+      <description>The Federalist Papers</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_01.mp3" length="9264000" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_01.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 21:00:00 +0000</pubDate>
+      <itunes:duration>00:09:39</itunes:duration>
+      <itunes:episode>10</itunes:episode>
+    </item>
+    <item>
+      <title>Federalist No. 2</title>
+      <description>The Federalist Papers</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_02.mp3" length="9653376" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_02.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 22:00:00 +0000</pubDate>
+      <itunes:duration>00:10:03</itunes:duration>
+      <itunes:episode>11</itunes:episode>
+    </item>
+    <item>
+      <title>Federalist No. 3</title>
+      <description>The Federalist Papers</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_03.mp3" length="8668076" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_03.mp3</guid>
+      <pubDate>Thu, 01 Oct 2026 23:00:00 +0000</pubDate>
+      <itunes:duration>00:09:02</itunes:duration>
+      <itunes:episode>12</itunes:episode>
+    </item>
+    <item>
+      <title>Federalist No. 4</title>
+      <description>The Federalist Papers</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_04.mp3" length="9472556" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_04.mp3</guid>
+      <pubDate>Fri, 02 Oct 2026 00:00:00 +0000</pubDate>
+      <itunes:duration>00:09:52</itunes:duration>
+      <itunes:episode>13</itunes:episode>
+    </item>
+    <item>
+      <title>Federalist No. 5</title>
+      <description>The Federalist Papers</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_05.mp3" length="7908524" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_05.mp3</guid>
+      <pubDate>Fri, 02 Oct 2026 01:00:00 +0000</pubDate>
+      <itunes:duration>00:08:14</itunes:duration>
+      <itunes:episode>14</itunes:episode>
+    </item>
+    <item>
+      <title>Washington&#x27;s First Inaugural Address</title>
+      <description>George Washington</description>
+      <enclosure url="https://mikehale.github.io/readings/audio/washington-first-inaugural-address.mp3" length="8224556" type="audio/mpeg"/>
+      <guid isPermaLink="false">readings-audio/washington-first-inaugural-address.mp3</guid>
+      <pubDate>Fri, 02 Oct 2026 02:00:00 +0000</pubDate>
+      <itunes:duration>00:08:34</itunes:duration>
+      <itunes:episode>15</itunes:episode>
+    </item>
+  </channel>
+</rss>
