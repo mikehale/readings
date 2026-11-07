@@ -1,10 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+<?xml version='1.0' encoding='UTF-8'?>
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
   <channel>
     <title>National_Security_and_Double_Government</title>
     <link>https://mikehale.github.io/readings/</link>
     <description>National Security and Double Government audiobook.</description>
     <language>en</language>
     <itunes:block>Yes</itunes:block>
+    <item>
+      <title>Chapter 1</title>
+      <description>National Security and Double Government — Chapter 1.</description>
+      <enclosure url="https://mikehale.github.io/readings/National_Security_and_Double_Government/chapter1.mp3" length="16105004" type="audio/mpeg" />
+      <guid isPermaLink="false">National_Security_and_Double_Government/chapter1.mp3</guid>
+      <itunes:duration>00:16:47</itunes:duration>
+      <itunes:episode>1</itunes:episode>
+    </item>
   </channel>
 </rss>
