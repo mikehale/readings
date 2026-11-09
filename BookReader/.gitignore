@@ -1,0 +1,22 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+*.xcuserdata/
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Local synth output (if ever written under the project)
+*.mp3
+!Fixtures/**/*.mp3
