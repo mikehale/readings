@@ -19,6 +19,7 @@
 		A1000000000000000000000A /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000A /* DropZoneView.swift */; };
 		A1000000000000000000000B /* ChapterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000B /* ChapterListView.swift */; };
 		A1000000000000000000000C /* ChapterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* ChapterDetailView.swift */; };
+		A1000000000000000000000F /* ChapterTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* ChapterTextCleaner.swift */; };
 		A1000000000000000000000D /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000D /* PDFKit.framework */; };
 		A1000000000000000000000E /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000E /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
@@ -36,6 +37,7 @@
 		A2000000000000000000000A /* DropZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropZoneView.swift; sourceTree = "<group>"; };
 		A2000000000000000000000B /* ChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterListView.swift; sourceTree = "<group>"; };
 		A2000000000000000000000C /* ChapterDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterDetailView.swift; sourceTree = "<group>"; };
+		A20000000000000000000011 /* ChapterTextCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTextCleaner.swift; sourceTree = "<group>"; };
 		A2000000000000000000000D /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
 		A2000000000000000000000E /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A2000000000000000000000F /* BookReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BookReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -91,6 +93,7 @@
 			children = (
 				A20000000000000000000005 /* PDFBookLoader.swift */,
 				A20000000000000000000006 /* ChapterDetector.swift */,
+				A20000000000000000000011 /* ChapterTextCleaner.swift */,
 				A20000000000000000000007 /* AudioOutputDirectory.swift */,
 				A20000000000000000000008 /* EdgeTTSSynthesizer.swift */,
 				A20000000000000000000009 /* ChapterAudioPlayer.swift */,
@@ -199,6 +202,7 @@
 				A10000000000000000000004 /* LoadedBook.swift in Sources */,
 				A10000000000000000000005 /* PDFBookLoader.swift in Sources */,
 				A10000000000000000000006 /* ChapterDetector.swift in Sources */,
+				A1000000000000000000000F /* ChapterTextCleaner.swift in Sources */,
 				A10000000000000000000007 /* AudioOutputDirectory.swift in Sources */,
 				A10000000000000000000008 /* EdgeTTSSynthesizer.swift in Sources */,
 				A10000000000000000000009 /* ChapterAudioPlayer.swift in Sources */,

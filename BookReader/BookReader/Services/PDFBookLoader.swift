@@ -47,6 +47,7 @@ enum PDFBookLoader {
                 parts.append(string)
             }
         }
-        return parts.joined(separator: "\n\n")
+        // Clean before preview + TTS so ornamental spaced headings aren't spoken letter-by-letter.
+        return ChapterTextCleaner.clean(parts.joined(separator: "\n\n"))
     }
 }
