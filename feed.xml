@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
   <channel>
     <title>Readings</title>
     <link>https://mikehale.github.io/readings/</link>
     <language>en-us</language>
     <description>Readings of Machiavelli, the Federalist Papers, and other classic political texts.</description>
     <itunes:author>Michael Hale</itunes:author>
-    <itunes:block>Yes</itunes:block>
+    <googleplay:block>Yes</googleplay:block>
+    <podcast:block>yes</podcast:block>
     <itunes:explicit>false</itunes:explicit>
     <itunes:type>serial</itunes:type>
     <item>
       <title>The Prince: Chapters 1–5</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapters-1-5</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-1-5.mp3" length="28000940" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/chapters-1-5.mp3</guid>
@@ -20,6 +22,7 @@
     </item>
     <item>
       <title>The Prince: Chapters 6–9</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapters-6-9</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-6-9.mp3" length="35396012" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/chapters-6-9.mp3</guid>
@@ -29,6 +32,7 @@
     </item>
     <item>
       <title>The Prince: Chapters 10–14</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapters-10-14</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-10-14.mp3" length="29052716" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/chapters-10-14.mp3</guid>
@@ -38,6 +42,7 @@
     </item>
     <item>
       <title>The Prince: Chapters 15–17</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapters-15-17</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-15-17.mp3" length="12940460" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/chapters-15-17.mp3</guid>
@@ -47,6 +52,7 @@
     </item>
     <item>
       <title>The Prince: Chapters 18–19</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapters-18-19</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-18-19.mp3" length="24377132" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/chapters-18-19.mp3</guid>
@@ -56,6 +62,7 @@
     </item>
     <item>
       <title>The Prince: Chapters 20–23</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapters-20-23</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-20-23.mp3" length="21163052" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/chapters-20-23.mp3</guid>
@@ -65,6 +72,7 @@
     </item>
     <item>
       <title>The Prince: Chapters 24–25</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapters-24-25</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/chapters-24-25.mp3" length="9059756" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/chapters-24-25.mp3</guid>
@@ -74,6 +82,7 @@
     </item>
     <item>
       <title>The Prince: Chapter 26</title>
+      <link>https://mikehale.github.io/readings/#the-prince-chapter-26</link>
       <description>Machiavelli, The Prince</description>
       <enclosure url="https://mikehale.github.io/readings/audio/the-prince/z_chapter-26.mp3" length="7190828" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/the-prince/z_chapter-26.mp3</guid>
@@ -83,6 +92,7 @@
     </item>
     <item>
       <title>Discourses on Livy: Book I, Chapter 16</title>
+      <link>https://mikehale.github.io/readings/#discourses-on-livy-book-i-chapter-16</link>
       <description>Machiavelli, Discourses on Livy</description>
       <enclosure url="https://mikehale.github.io/readings/audio/discourses-on-livy/machiavelli_discourses_i16_orion.mp3" length="6610560" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/discourses-on-livy/machiavelli_discourses_i16_orion.mp3</guid>
@@ -92,6 +102,7 @@
     </item>
     <item>
       <title>Federalist No. 1</title>
+      <link>https://mikehale.github.io/readings/#federalist-no-1</link>
       <description>The Federalist Papers</description>
       <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_01.mp3" length="9264000" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_01.mp3</guid>
@@ -101,6 +112,7 @@
     </item>
     <item>
       <title>Federalist No. 2</title>
+      <link>https://mikehale.github.io/readings/#federalist-no-2</link>
       <description>The Federalist Papers</description>
       <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_02.mp3" length="9653376" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_02.mp3</guid>
@@ -110,6 +122,7 @@
     </item>
     <item>
       <title>Federalist No. 3</title>
+      <link>https://mikehale.github.io/readings/#federalist-no-3</link>
       <description>The Federalist Papers</description>
       <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_03.mp3" length="8668076" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_03.mp3</guid>
@@ -119,6 +132,7 @@
     </item>
     <item>
       <title>Federalist No. 4</title>
+      <link>https://mikehale.github.io/readings/#federalist-no-4</link>
       <description>The Federalist Papers</description>
       <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_04.mp3" length="9472556" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_04.mp3</guid>
@@ -128,6 +142,7 @@
     </item>
     <item>
       <title>Federalist No. 5</title>
+      <link>https://mikehale.github.io/readings/#federalist-no-5</link>
       <description>The Federalist Papers</description>
       <enclosure url="https://mikehale.github.io/readings/audio/federalist-papers/Federalist_05.mp3" length="7908524" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/federalist-papers/Federalist_05.mp3</guid>
@@ -137,6 +152,7 @@
     </item>
     <item>
       <title>Washington&#x27;s First Inaugural Address</title>
+      <link>https://mikehale.github.io/readings/#washingtons-first-inaugural-address</link>
       <description>George Washington</description>
       <enclosure url="https://mikehale.github.io/readings/audio/washington-first-inaugural-address.mp3" length="8224556" type="audio/mpeg"/>
       <guid isPermaLink="false">readings-audio/washington-first-inaugural-address.mp3</guid>
