@@ -1,6 +1,5 @@
 import AppKit
 import Combine
-import PDFKit
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -22,14 +21,14 @@ final class BookReaderViewModel: ObservableObject {
 
     let player = ChapterAudioPlayer()
 
-    private var document: PDFDocument?
+    private let pdfSession = PDFSession()
     private let synthesizer: SpeechSynthesizing
     private let processBroker = SynthesisProcessBroker()
     private var cancellables = Set<AnyCancellable>()
     private var elapsedTimer: Timer?
     private var synthesisTask: Task<Void, Never>?
-    private var openTask: Task<Void, Never>?
-    private var previewTask: Task<Void, Never>?
+    private var openGeneration = 0
+    private var previewChapterID: BookChapter.ID?
     private var securityScopedURL: URL?
     private var securityScopedAccessActive = false
 
@@ -73,10 +72,9 @@ final class BookReaderViewModel: ObservableObject {
         open(url: url)
     }
 
-    /// Open stays responsive: PDFKit load + outline + first-chapter extract run off the main actor.
+    /// Never awaits PDFKit from the MainActor. Fire-and-forget onto a serial PDF queue.
     func open(url: URL) {
-        openTask?.cancel()
-        previewTask?.cancel()
+        cancelOpenWork(keepSecurityScope: false)
         releaseSecurityScope()
 
         let access = url.startAccessingSecurityScopedResource()
@@ -85,95 +83,133 @@ final class BookReaderViewModel: ObservableObject {
             securityScopedAccessActive = true
         }
 
-        isOpeningBook = true
-        isLoadingPreview = false
-        openingProgress = "Opening PDF…"
-        errorMessage = nil
-        statusMessage = nil
+        book = nil
+        selectedChapterID = nil
         chapterPreview = nil
         player.stop()
         audioURLs = [:]
+        errorMessage = nil
+        statusMessage = nil
+        isLoadingPreview = false
+        isOpeningBook = true
+        openingProgress = "Opening PDF…"
 
-        openTask = Task { @MainActor in
-            do {
-                openingProgress = "Reading PDF & chapters…"
-                // PDFDocument(url:) + outline walk can stall the UI for large books if done on MainActor.
-                let loaded = try await Task.detached(priority: .userInitiated) {
-                    try PDFBookLoader.load(url: url)
-                }.value
-                try Task.checkCancellation()
-
-                document = loaded.document
-                book = loaded.book
-                selectedChapterID = loaded.book.chapters.first?.id
-                statusMessage = "Loaded \(loaded.book.pageCount) pages · \(loaded.book.chapters.count) chapters"
-                isOpeningBook = false
-                openingProgress = nil
-
-                await loadPreviewAsync(for: loaded.book.chapters.first?.id)
-            } catch is CancellationError {
-                isOpeningBook = false
-                openingProgress = nil
-            } catch {
-                isOpeningBook = false
-                openingProgress = nil
-                book = nil
-                document = nil
-                selectedChapterID = nil
-                chapterPreview = nil
-                errorMessage = error.localizedDescription
-                releaseSecurityScope()
+        // Let SwiftUI paint the spinner before any PDFKit work starts.
+        let generation = pdfSession.beginOpen()
+        openGeneration = generation
+        Task { @MainActor in
+            await Task.yield()
+            guard self.openGeneration == generation else { return }
+            self.openingProgress = "Reading PDF & chapters…"
+            self.pdfSession.open(url: url, generation: generation) { [weak self] result in
+                Task { @MainActor in
+                    self?.handleOpenResult(result, expectedGeneration: generation)
+                }
             }
-            openTask = nil
         }
+    }
+
+    func cancelOpen() {
+        cancelOpenWork(keepSecurityScope: false)
+        releaseSecurityScope()
+        book = nil
+        selectedChapterID = nil
+        chapterPreview = nil
+        isOpeningBook = false
+        isLoadingPreview = false
+        openingProgress = nil
+        statusMessage = "Open cancelled"
     }
 
     func selectChapter(id: BookChapter.ID?) {
         selectedChapterID = id
+        chapterPreview = nil
+
         if let id, let url = audioURLs[id] {
             try? player.load(url: url)
         } else {
             player.stop()
         }
-        Task { await loadPreviewAsync(for: id) }
+
+        guard let id else {
+            isLoadingPreview = false
+            openingProgress = nil
+            previewChapterID = nil
+            return
+        }
+        // Text extract only after the user (or open) selects a chapter — never during open.
+        loadPreview(for: id)
     }
 
-    private func loadPreviewAsync(for chapterID: BookChapter.ID?) async {
-        previewTask?.cancel()
-        guard let document, let chapterID,
-              let chapter = book?.chapters.first(where: { $0.id == chapterID })
-        else {
+    private func handleOpenResult(
+        _ result: Result<PDFSession.OpenResult, Error>,
+        expectedGeneration: Int
+    ) {
+        guard openGeneration == expectedGeneration else { return }
+
+        switch result {
+        case .success(let opened):
+            guard opened.generation == openGeneration else { return }
+            book = opened.book
+            isOpeningBook = false
+            openingProgress = nil
+            statusMessage = "Loaded \(opened.book.pageCount) pages · \(opened.book.chapters.count) chapters"
+            // Defer text extract: select first chapter only after open UI is up.
+            // Selection triggers preview load separately (spinner in detail, not blocking open).
+            if let first = opened.book.chapters.first?.id {
+                selectChapter(id: first)
+            } else {
+                selectedChapterID = nil
+                chapterPreview = nil
+            }
+        case .failure(let error):
+            isOpeningBook = false
+            openingProgress = nil
+            book = nil
+            selectedChapterID = nil
+            chapterPreview = nil
+            errorMessage = error.localizedDescription
+            releaseSecurityScope()
+        }
+    }
+
+    private func loadPreview(for chapterID: BookChapter.ID) {
+        guard let chapter = book?.chapters.first(where: { $0.id == chapterID }) else {
             chapterPreview = nil
             isLoadingPreview = false
             return
         }
 
+        let generation = openGeneration
+        previewChapterID = chapterID
         isLoadingPreview = true
         openingProgress = "Extracting “\(chapter.title)”…"
-        let doc = document
-        previewTask = Task { @MainActor in
-            do {
-                let text = await Task.detached(priority: .userInitiated) {
-                    PDFBookLoader.text(for: chapter, in: doc)
-                }.value
-                try Task.checkCancellation()
-                // Ignore stale previews if selection changed mid-extract.
-                guard selectedChapterID == chapterID else { return }
-                chapterPreview = ChapterTextPreview.make(from: text)
-            } catch is CancellationError {
-                // superseded
-            } catch {
-                if selectedChapterID == chapterID {
-                    errorMessage = error.localizedDescription
+
+        pdfSession.chapterText(chapter: chapter, generation: generation) { [weak self] result in
+            Task { @MainActor in
+                guard let self else { return }
+                guard self.openGeneration == generation else { return }
+                guard self.selectedChapterID == chapterID, self.previewChapterID == chapterID else { return }
+
+                switch result {
+                case .success(let text):
+                    self.chapterPreview = ChapterTextPreview.make(from: text)
+                case .failure(let error):
+                    self.chapterPreview = nil
+                    self.errorMessage = error.localizedDescription
                 }
+                self.isLoadingPreview = false
+                self.openingProgress = nil
             }
-            if selectedChapterID == chapterID {
-                isLoadingPreview = false
-                openingProgress = nil
-            }
-            previewTask = nil
         }
-        await previewTask?.value
+    }
+
+    private func cancelOpenWork(keepSecurityScope: Bool) {
+        openGeneration = pdfSession.beginOpen()
+        previewChapterID = nil
+        if !keepSecurityScope {
+            // beginOpen already invalidated in-flight PDF work via generation bump.
+        }
     }
 
     private func releaseSecurityScope() {
@@ -309,10 +345,10 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if let book = model.book {
-                reader(book)
-            } else if model.isOpeningBook {
+            if model.isOpeningBook {
                 openingPlaceholder
+            } else if let book = model.book {
+                reader(book)
             } else {
                 DropZoneView(
                     onOpen: { model.openPanel() },
@@ -334,7 +370,7 @@ struct ContentView: View {
             }
         }
         .overlay {
-            if model.isOpeningBook || model.isLoadingPreview {
+            if model.isLoadingPreview && model.book != nil {
                 loadingBanner
             }
         }
@@ -411,6 +447,7 @@ struct ContentView: View {
                 ChapterDetailView(
                     chapter: chapter,
                     preview: model.chapterPreview,
+                    isLoadingPreview: model.isLoadingPreview,
                     isSynthesizing: model.isSynthesizing,
                     synthesisPhase: model.synthesisPhase,
                     elapsedSeconds: model.elapsedSeconds,
@@ -439,12 +476,16 @@ struct ContentView: View {
     }
 
     private var openingPlaceholder: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             ProgressView()
                 .controlSize(.large)
             Text(model.openingProgress ?? "Opening PDF…")
                 .font(.title3)
                 .foregroundStyle(.secondary)
+            Button("Cancel", role: .cancel) {
+                model.cancelOpen()
+            }
+            .keyboardShortcut(.cancelAction)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -454,7 +495,7 @@ struct ContentView: View {
             HStack(spacing: 10) {
                 ProgressView()
                     .controlSize(.small)
-                Text(model.openingProgress ?? (model.isOpeningBook ? "Opening PDF…" : "Loading preview…"))
+                Text(model.openingProgress ?? "Loading preview…")
                     .font(.caption)
                 Spacer(minLength: 0)
             }

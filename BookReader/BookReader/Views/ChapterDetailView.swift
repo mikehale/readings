@@ -3,6 +3,7 @@ import SwiftUI
 struct ChapterDetailView: View {
     let chapter: BookChapter
     let preview: ChapterTextPreview?
+    var isLoadingPreview: Bool = false
     let isSynthesizing: Bool
     let synthesisPhase: SynthesisPhase
     let elapsedSeconds: Int
@@ -20,7 +21,7 @@ struct ChapterDetailView: View {
             Divider()
             ScrollView {
                 Group {
-                    if preview == nil {
+                    if isLoadingPreview {
                         HStack(spacing: 8) {
                             ProgressView()
                                 .controlSize(.small)
@@ -28,10 +29,14 @@ struct ChapterDetailView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        Text(preview?.previewText ?? "Select a chapter to preview text.")
+                    } else if let preview {
+                        Text(preview.previewText)
                             .font(.body)
                             .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text("Select a chapter to load its text.")
+                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }

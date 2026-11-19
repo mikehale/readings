@@ -12,6 +12,7 @@
 		A10000000000000000000003 /* BookChapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* BookChapter.swift */; };
 		A10000000000000000000004 /* LoadedBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* LoadedBook.swift */; };
 		A10000000000000000000005 /* PDFBookLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* PDFBookLoader.swift */; };
+		A1000000000000000000001C /* PDFSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001C /* PDFSession.swift */; };
 		A10000000000000000000006 /* ChapterDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* ChapterDetector.swift */; };
 		A10000000000000000000007 /* AudioOutputDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* AudioOutputDirectory.swift */; };
 		A10000000000000000000008 /* EdgeTTSSynthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* EdgeTTSSynthesizer.swift */; };
@@ -40,6 +41,7 @@
 		A20000000000000000000003 /* BookChapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookChapter.swift; sourceTree = "<group>"; };
 		A20000000000000000000004 /* LoadedBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedBook.swift; sourceTree = "<group>"; };
 		A20000000000000000000005 /* PDFBookLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFBookLoader.swift; sourceTree = "<group>"; };
+		A2000000000000000000001C /* PDFSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFSession.swift; sourceTree = "<group>"; };
 		A20000000000000000000006 /* ChapterDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterDetector.swift; sourceTree = "<group>"; };
 		A20000000000000000000007 /* AudioOutputDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioOutputDirectory.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* EdgeTTSSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeTTSSynthesizer.swift; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000005 /* PDFBookLoader.swift */,
+				A2000000000000000000001C /* PDFSession.swift */,
 				A20000000000000000000006 /* ChapterDetector.swift */,
 				A20000000000000000000011 /* ChapterTextCleaner.swift */,
 				A20000000000000000000007 /* AudioOutputDirectory.swift */,
@@ -260,6 +263,7 @@
 				A10000000000000000000004 /* LoadedBook.swift in Sources */,
 				A10000000000000000000012 /* VoiceProfile.swift in Sources */,
 				A10000000000000000000005 /* PDFBookLoader.swift in Sources */,
+				A1000000000000000000001C /* PDFSession.swift in Sources */,
 				A10000000000000000000006 /* ChapterDetector.swift in Sources */,
 				A1000000000000000000000F /* ChapterTextCleaner.swift in Sources */,
 				A10000000000000000000007 /* AudioOutputDirectory.swift in Sources */,
