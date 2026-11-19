@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
   <channel>
     <title>Readings</title>
     <link>https://mikehale.github.io/readings/</link>
     <language>en-us</language>
     <description>Readings of Machiavelli, the Federalist Papers, and other classic political texts.</description>
     <itunes:author>Michael Hale</itunes:author>
-    <googleplay:block>Yes</googleplay:block>
-    <podcast:block>yes</podcast:block>
     <itunes:explicit>false</itunes:explicit>
     <itunes:type>serial</itunes:type>
     <item>
