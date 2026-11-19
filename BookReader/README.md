@@ -53,19 +53,38 @@ Signing is set to ad-hoc (`CODE_SIGN_IDENTITY = "-"`) for personal local runs. A
 
 ## Happy path
 
-1. **Open PDF…** (⌘O) or drag a PDF onto the window.
+1. **Open PDF…** (⌘O) or drag a PDF onto the window (works on the empty state and after a book is open).
 2. Confirm title + page count in the sidebar; chapters come from `PDFOutline` (or a single **Full book** chapter if there is no outline).
 3. Select a chapter → text preview (first ~2,500 characters) + word/character counts.
-4. **Synthesize MP3** → writes  
+4. In the sidebar **Voice** picker, leave **Andrew (online)** selected for working synth, or prepare a clone ref (below).
+5. **Synthesize MP3** → writes  
    `~/Movies/BookReader/<BookTitle>/<ChapterTitle>.mp3`  
    (falls back to `~/Library/Application Support/BookReader/Audio/` if Movies is unavailable).
-5. **Play / Pause** the generated chapter in-app.
+6. **Play / Pause** the generated chapter in-app.
 
-Voice is locked to **`en-US-AndrewNeural`**. Output format is **MP3**.
+Online ship voice remains **`en-US-AndrewNeural`**. Output format is **MP3**. Extracted chapter text is always cleaned (`ChapterTextCleaner`) before preview/TTS.
+
+## Voice picker (clone refs)
+
+Sidebar control selects the `VoiceProfile`:
+
+| Backend | Behavior now |
+|---------|----------------|
+| **Andrew (online)** | Working path via `edge-tts` |
+| **Kokoro offline** | Profile reserved; synth not wired yet |
+| **Narrator clone** | Pick/import a short **denoised** ref; Chatterbox CLI not wired yet (shows a clear error if you hit Synthesize) |
+
+References live under:
+
+`~/Library/Application Support/BookReader/VoiceRefs/`
+
+- **Import reference…** copies MP3/WAV/M4A into that folder and selects it.
+- On this development Mac, first launch may seed **Dune narrator (denoised 10s)** from the Project store hillclimb clip when that file is present.
+- Prefer Demucs-denoised short clips; do not keep full YouTube downloads (Project memory preference).
 
 ## Out of scope (this slice)
 
-Library UI, podcast `feed.xml` export, OCR for scanned PDFs, cloud/paid TTS APIs, and any changes to the GitHub Pages site.
+Library UI, podcast `feed.xml` export, OCR for scanned PDFs, cloud/paid TTS APIs, full Chatterbox/Kokoro synth wiring, and any changes to the GitHub Pages site.
 
 ## Layout
 

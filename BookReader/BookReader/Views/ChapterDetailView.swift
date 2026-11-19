@@ -7,6 +7,7 @@ struct ChapterDetailView: View {
     let audioURL: URL?
     let isPlaying: Bool
     let statusMessage: String?
+    let voiceSummary: String
     let onSynthesize: () -> Void
     let onTogglePlayback: () -> Void
 
@@ -40,6 +41,7 @@ struct ChapterDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                Text(voiceSummary)
             }
             .font(.caption)
             .foregroundStyle(.secondary)

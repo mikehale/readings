@@ -20,6 +20,10 @@
 		A1000000000000000000000B /* ChapterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000B /* ChapterListView.swift */; };
 		A1000000000000000000000C /* ChapterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* ChapterDetailView.swift */; };
 		A1000000000000000000000F /* ChapterTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* ChapterTextCleaner.swift */; };
+		A10000000000000000000012 /* VoiceProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* VoiceProfile.swift */; };
+		A10000000000000000000013 /* SpeechSynthesizing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* SpeechSynthesizing.swift */; };
+		A10000000000000000000014 /* VoiceReferenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* VoiceReferenceStore.swift */; };
+		A10000000000000000000015 /* VoiceProfilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* VoiceProfilePicker.swift */; };
 		A1000000000000000000000D /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000D /* PDFKit.framework */; };
 		A1000000000000000000000E /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000E /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
@@ -38,6 +42,10 @@
 		A2000000000000000000000B /* ChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterListView.swift; sourceTree = "<group>"; };
 		A2000000000000000000000C /* ChapterDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterDetailView.swift; sourceTree = "<group>"; };
 		A20000000000000000000011 /* ChapterTextCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTextCleaner.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* VoiceProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceProfile.swift; sourceTree = "<group>"; };
+		A20000000000000000000013 /* SpeechSynthesizing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechSynthesizing.swift; sourceTree = "<group>"; };
+		A20000000000000000000014 /* VoiceReferenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceReferenceStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000015 /* VoiceProfilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceProfilePicker.swift; sourceTree = "<group>"; };
 		A2000000000000000000000D /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
 		A2000000000000000000000E /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A2000000000000000000000F /* BookReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BookReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,6 +92,7 @@
 			children = (
 				A20000000000000000000003 /* BookChapter.swift */,
 				A20000000000000000000004 /* LoadedBook.swift */,
+				A20000000000000000000012 /* VoiceProfile.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -97,6 +106,8 @@
 				A20000000000000000000007 /* AudioOutputDirectory.swift */,
 				A20000000000000000000008 /* EdgeTTSSynthesizer.swift */,
 				A20000000000000000000009 /* ChapterAudioPlayer.swift */,
+				A20000000000000000000013 /* SpeechSynthesizing.swift */,
+				A20000000000000000000014 /* VoiceReferenceStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -107,6 +118,7 @@
 				A2000000000000000000000A /* DropZoneView.swift */,
 				A2000000000000000000000B /* ChapterListView.swift */,
 				A2000000000000000000000C /* ChapterDetailView.swift */,
+				A20000000000000000000015 /* VoiceProfilePicker.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -200,15 +212,19 @@
 				A10000000000000000000002 /* ContentView.swift in Sources */,
 				A10000000000000000000003 /* BookChapter.swift in Sources */,
 				A10000000000000000000004 /* LoadedBook.swift in Sources */,
+				A10000000000000000000012 /* VoiceProfile.swift in Sources */,
 				A10000000000000000000005 /* PDFBookLoader.swift in Sources */,
 				A10000000000000000000006 /* ChapterDetector.swift in Sources */,
 				A1000000000000000000000F /* ChapterTextCleaner.swift in Sources */,
 				A10000000000000000000007 /* AudioOutputDirectory.swift in Sources */,
 				A10000000000000000000008 /* EdgeTTSSynthesizer.swift in Sources */,
 				A10000000000000000000009 /* ChapterAudioPlayer.swift in Sources */,
+				A10000000000000000000013 /* SpeechSynthesizing.swift in Sources */,
+				A10000000000000000000014 /* VoiceReferenceStore.swift in Sources */,
 				A1000000000000000000000A /* DropZoneView.swift in Sources */,
 				A1000000000000000000000B /* ChapterListView.swift in Sources */,
 				A1000000000000000000000C /* ChapterDetailView.swift in Sources */,
+				A10000000000000000000015 /* VoiceProfilePicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

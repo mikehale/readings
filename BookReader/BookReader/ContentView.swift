@@ -13,15 +13,28 @@ final class BookReaderViewModel: ObservableObject {
     @Published var statusMessage: String?
     @Published var errorMessage: String?
     @Published var audioURLs: [BookChapter.ID: URL] = [:]
+    @Published var voiceStore: VoiceReferenceStore
 
     let player = ChapterAudioPlayer()
 
     private var document: PDFDocument?
-    private let synthesizer = EdgeTTSSynthesizer()
+    private let synthesizer: SpeechSynthesizing
     private var cancellables = Set<AnyCancellable>()
 
-    init() {
+    init(
+        voiceStore: VoiceReferenceStore,
+        synthesizer: SpeechSynthesizing = SpeechSynthesisRouter()
+    ) {
+        self.voiceStore = voiceStore
+        self.synthesizer = synthesizer
+
         player.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+
+        self.voiceStore.objectWillChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
             }
@@ -95,9 +108,10 @@ final class BookReaderViewModel: ObservableObject {
             return
         }
 
+        let profile = voiceStore.selectedProfile
         isSynthesizing = true
         errorMessage = nil
-        statusMessage = "Synthesizing with \(EdgeTTSSynthesizer.voice)…"
+        statusMessage = "Synthesizing with \(profile.displayName)…"
 
         Task {
             do {
@@ -105,10 +119,14 @@ final class BookReaderViewModel: ObservableObject {
                     bookTitle: book.title,
                     chapterTitle: chapter.title
                 )
-                try await synthesizer.synthesize(text: preview.fullText, to: outputURL)
+                try await synthesizer.synthesize(
+                    text: preview.fullText,
+                    profile: profile,
+                    to: outputURL
+                )
                 audioURLs[chapter.id] = outputURL
                 try player.load(url: outputURL)
-                statusMessage = "Saved MP3 · \(EdgeTTSSynthesizer.voice)"
+                statusMessage = "Saved MP3 · \(profile.displayName)"
             } catch {
                 errorMessage = error.localizedDescription
                 statusMessage = nil
@@ -131,7 +149,13 @@ final class BookReaderViewModel: ObservableObject {
 }
 
 struct ContentView: View {
-    @StateObject private var model = BookReaderViewModel()
+    @StateObject private var model: BookReaderViewModel
+    @State private var isDropTargeted = false
+
+    init() {
+        let store = VoiceReferenceStore()
+        _model = StateObject(wrappedValue: BookReaderViewModel(voiceStore: store))
+    }
 
     var body: some View {
         Group {
@@ -149,6 +173,20 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 800, minHeight: 520)
+        .overlay {
+            if isDropTargeted {
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(Color.accentColor, lineWidth: 3)
+                    .padding(6)
+                    .allowsHitTesting(false)
+            }
+        }
+        // Window-wide PDF drop so Finder drags work even after a book is open.
+        .pdfDrop(isTargeted: $isDropTargeted) { urls in
+            if let url = urls.first {
+                model.open(url: url)
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .bookReaderOpenPDF)) { _ in
             model.openPanel()
         }
@@ -195,13 +233,22 @@ struct ContentView: View {
 
                 Divider()
 
+                VoiceProfilePicker(
+                    store: model.voiceStore,
+                    isSynthesizing: model.isSynthesizing
+                )
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+
+                Divider()
+
                 HStack {
                     Button("Open PDF…") { model.openPanel() }
                     Spacer()
                 }
                 .padding(10)
             }
-            .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
+            .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 380)
         } detail: {
             if let chapter = model.selectedChapter {
                 ChapterDetailView(
@@ -211,6 +258,7 @@ struct ContentView: View {
                     audioURL: model.selectedAudioURL,
                     isPlaying: model.player.isPlaying,
                     statusMessage: model.statusMessage,
+                    voiceSummary: model.voiceStore.selectedProfile.displayName,
                     onSynthesize: { model.synthesizeSelectedChapter() },
                     onTogglePlayback: { model.togglePlayback() }
                 )
