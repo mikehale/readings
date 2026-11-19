@@ -25,6 +25,7 @@
 		A10000000000000000000014 /* VoiceReferenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* VoiceReferenceStore.swift */; };
 		A10000000000000000000015 /* VoiceProfilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* VoiceProfilePicker.swift */; };
 		A10000000000000000000016 /* XTTSv2Synthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* XTTSv2Synthesizer.swift */; };
+		A1000000000000000000001B /* SynthesisProcessBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001B /* SynthesisProcessBroker.swift */; };
 		A10000000000000000000017 /* Curt.wav in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* Curt.wav */; };
 		A10000000000000000000018 /* NeilGaiman.wav in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* NeilGaiman.wav */; };
 		A10000000000000000000019 /* AnaFlorence.wav in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* AnaFlorence.wav */; };
@@ -52,6 +53,7 @@
 		A20000000000000000000014 /* VoiceReferenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceReferenceStore.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* VoiceProfilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceProfilePicker.swift; sourceTree = "<group>"; };
 		A20000000000000000000016 /* XTTSv2Synthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XTTSv2Synthesizer.swift; sourceTree = "<group>"; };
+		A2000000000000000000001B /* SynthesisProcessBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthesisProcessBroker.swift; sourceTree = "<group>"; };
 		A20000000000000000000017 /* Curt.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Curt.wav; sourceTree = "<group>"; };
 		A20000000000000000000018 /* NeilGaiman.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = NeilGaiman.wav; sourceTree = "<group>"; };
 		A20000000000000000000019 /* AnaFlorence.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = AnaFlorence.wav; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 				A20000000000000000000013 /* SpeechSynthesizing.swift */,
 				A20000000000000000000014 /* VoiceReferenceStore.swift */,
 				A20000000000000000000016 /* XTTSv2Synthesizer.swift */,
+				A2000000000000000000001B /* SynthesisProcessBroker.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -265,6 +268,7 @@
 				A10000000000000000000013 /* SpeechSynthesizing.swift in Sources */,
 				A10000000000000000000014 /* VoiceReferenceStore.swift in Sources */,
 				A10000000000000000000016 /* XTTSv2Synthesizer.swift in Sources */,
+				A1000000000000000000001B /* SynthesisProcessBroker.swift in Sources */,
 				A1000000000000000000000A /* DropZoneView.swift in Sources */,
 				A1000000000000000000000B /* ChapterListView.swift in Sources */,
 				A1000000000000000000000C /* ChapterDetailView.swift in Sources */,

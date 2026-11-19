@@ -1,7 +1,14 @@
 import Foundation
 
 protocol SpeechSynthesizing {
-    func synthesize(text: String, profile: VoiceProfile, to outputURL: URL) async throws
+    func synthesize(
+        text: String,
+        profile: VoiceProfile,
+        to outputURL: URL,
+        broker: SynthesisProcessBroker
+    ) async throws
+
+    func cancel(broker: SynthesisProcessBroker)
 }
 
 enum SpeechSynthesisError: LocalizedError {
@@ -37,12 +44,17 @@ struct SpeechSynthesisRouter: SpeechSynthesizing {
         self.xtts = xtts
     }
 
-    func synthesize(text: String, profile: VoiceProfile, to outputURL: URL) async throws {
+    func synthesize(
+        text: String,
+        profile: VoiceProfile,
+        to outputURL: URL,
+        broker: SynthesisProcessBroker
+    ) async throws {
         switch profile {
         case .xtts(let speaker):
-            try await xtts.synthesize(text: text, speakerWav: speaker, to: outputURL)
+            try await xtts.synthesize(text: text, speakerWav: speaker, to: outputURL, broker: broker)
         case .onlineAndrew:
-            try await edge.synthesize(text: text, to: outputURL)
+            try await edge.synthesize(text: text, to: outputURL, broker: broker)
         case .offlineKokoro:
             throw SpeechSynthesisError.kokoroNotWired
         case .clone(let refURL):
@@ -52,5 +64,9 @@ struct SpeechSynthesisRouter: SpeechSynthesizing {
             _ = refURL
             throw SpeechSynthesisError.cloneNotWired
         }
+    }
+
+    func cancel(broker: SynthesisProcessBroker) {
+        broker.cancel()
     }
 }

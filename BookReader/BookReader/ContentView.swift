@@ -10,6 +10,8 @@ final class BookReaderViewModel: ObservableObject {
     @Published var selectedChapterID: BookChapter.ID?
     @Published var chapterPreview: ChapterTextPreview?
     @Published var isSynthesizing = false
+    @Published var synthesisPhase: SynthesisPhase = .idle
+    @Published var elapsedSeconds = 0
     @Published var statusMessage: String?
     @Published var errorMessage: String?
     @Published var audioURLs: [BookChapter.ID: URL] = [:]
@@ -19,7 +21,10 @@ final class BookReaderViewModel: ObservableObject {
 
     private var document: PDFDocument?
     private let synthesizer: SpeechSynthesizing
+    private let processBroker = SynthesisProcessBroker()
     private var cancellables = Set<AnyCancellable>()
+    private var elapsedTimer: Timer?
+    private var synthesisTask: Task<Void, Never>?
 
     init(
         voiceStore: VoiceReferenceStore,
@@ -102,6 +107,7 @@ final class BookReaderViewModel: ObservableObject {
     }
 
     func synthesizeSelectedChapter() {
+        guard !isSynthesizing else { return }
         guard let book, let chapter = selectedChapter, let preview = chapterPreview else { return }
         guard !preview.fullText.isEmpty else {
             errorMessage = "This chapter has no extractable text."
@@ -109,30 +115,94 @@ final class BookReaderViewModel: ObservableObject {
         }
 
         let profile = voiceStore.selectedProfile
+        let chapterID = chapter.id
+        processBroker.beginJob()
         isSynthesizing = true
+        synthesisPhase = .preparing
         errorMessage = nil
-        statusMessage = "Synthesizing with \(profile.displayName)…"
+        statusMessage = "Preparing \(profile.shortDisplayName)…"
+        startElapsedTimer()
 
-        Task {
+        synthesisTask = Task { @MainActor in
             do {
                 let outputURL = try AudioOutputDirectory.outputURL(
                     bookTitle: book.title,
                     chapterTitle: chapter.title
                 )
+                synthesisPhase = .running
+                statusMessage = "Synthesizing with \(profile.shortDisplayName)…"
                 try await synthesizer.synthesize(
                     text: preview.fullText,
                     profile: profile,
-                    to: outputURL
+                    to: outputURL,
+                    broker: processBroker
                 )
-                audioURLs[chapter.id] = outputURL
+                audioURLs[chapterID] = outputURL
                 try player.load(url: outputURL)
-                statusMessage = "Saved MP3 · \(profile.displayName)"
+                synthesisPhase = .completed
+                statusMessage = "Saved MP3 · \(profile.shortDisplayName)"
+            } catch is SynthesisCancelError {
+                synthesisPhase = .cancelled
+                statusMessage = "Stopped"
+                errorMessage = nil
+            } catch let error as EdgeTTSError {
+                if case .cancelled = error {
+                    synthesisPhase = .cancelled
+                    statusMessage = "Stopped"
+                    errorMessage = nil
+                } else {
+                    synthesisPhase = .failed
+                    errorMessage = error.localizedDescription
+                    statusMessage = nil
+                }
+            } catch let error as XTTSv2Error {
+                if case .cancelled = error {
+                    synthesisPhase = .cancelled
+                    statusMessage = "Stopped"
+                    errorMessage = nil
+                } else {
+                    synthesisPhase = .failed
+                    errorMessage = error.localizedDescription
+                    statusMessage = nil
+                }
             } catch {
-                errorMessage = error.localizedDescription
-                statusMessage = nil
+                if processBroker.wasCancelled
+                    || error.localizedDescription.lowercased().contains("stopped") {
+                    synthesisPhase = .cancelled
+                    statusMessage = "Stopped"
+                    errorMessage = nil
+                } else {
+                    synthesisPhase = .failed
+                    errorMessage = error.localizedDescription
+                    statusMessage = nil
+                }
             }
+            stopElapsedTimer()
             isSynthesizing = false
+            synthesisTask = nil
         }
+    }
+
+    func stopSynthesis() {
+        guard isSynthesizing else { return }
+        synthesisPhase = .stopping
+        statusMessage = "Stopping…"
+        synthesizer.cancel(broker: processBroker)
+    }
+
+    private func startElapsedTimer() {
+        elapsedSeconds = 0
+        elapsedTimer?.invalidate()
+        elapsedTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.elapsedSeconds += 1
+            }
+        }
+    }
+
+    private func stopElapsedTimer() {
+        elapsedTimer?.invalidate()
+        elapsedTimer = nil
     }
 
     func togglePlayback() {
@@ -151,6 +221,8 @@ final class BookReaderViewModel: ObservableObject {
 struct ContentView: View {
     @StateObject private var model: BookReaderViewModel
     @State private var isDropTargeted = false
+    /// Keep chapters/voice sidebar visible on launch (not collapsed).
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     init() {
         let store = VoiceReferenceStore()
@@ -205,7 +277,7 @@ struct ContentView: View {
 
     @ViewBuilder
     private func reader(_ book: LoadedBook) -> some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(book.title)
@@ -255,11 +327,14 @@ struct ContentView: View {
                     chapter: chapter,
                     preview: model.chapterPreview,
                     isSynthesizing: model.isSynthesizing,
+                    synthesisPhase: model.synthesisPhase,
+                    elapsedSeconds: model.elapsedSeconds,
                     audioURL: model.selectedAudioURL,
                     isPlaying: model.player.isPlaying,
                     statusMessage: model.statusMessage,
                     voiceSummary: model.voiceStore.selectedProfile.shortDisplayName,
                     onSynthesize: { model.synthesizeSelectedChapter() },
+                    onStopSynthesis: { model.stopSynthesis() },
                     onTogglePlayback: { model.togglePlayback() }
                 )
             } else {

@@ -5,6 +5,7 @@ enum EdgeTTSError: LocalizedError {
     case emptyText
     case processFailed(status: Int32, stderr: String)
     case outputMissing(URL)
+    case cancelled
 
     var errorDescription: String? {
         switch self {
@@ -20,6 +21,8 @@ enum EdgeTTSError: LocalizedError {
             return "edge-tts failed (\(status)): \(detail)"
         case .outputMissing(let url):
             return "edge-tts finished but no MP3 was written at \(url.path)."
+        case .cancelled:
+            return "Synthesis stopped."
         }
     }
 }
@@ -34,9 +37,10 @@ struct EdgeTTSSynthesizer {
         self.fileManager = fileManager
     }
 
-    func synthesize(text: String, to outputURL: URL) async throws {
+    func synthesize(text: String, to outputURL: URL, broker: SynthesisProcessBroker) async throws {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw EdgeTTSError.emptyText }
+        try broker.throwIfCancelled()
 
         let binary = try Self.resolveEdgeTTSBinary()
         try fileManager.createDirectory(
@@ -68,16 +72,21 @@ struct EdgeTTSSynthesizer {
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             do {
+                try broker.register(process)
                 try process.run()
             } catch {
+                broker.unregister(process)
                 continuation.resume(throwing: error)
                 return
             }
 
             process.terminationHandler = { finished in
+                broker.unregister(finished)
                 let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
                 let stderr = String(data: stderrData, encoding: .utf8) ?? ""
-                if finished.terminationStatus == 0 {
+                if broker.wasCancelled || finished.terminationReason == .uncaughtSignal {
+                    continuation.resume(throwing: EdgeTTSError.cancelled)
+                } else if finished.terminationStatus == 0 {
                     continuation.resume()
                 } else {
                     continuation.resume(
@@ -90,6 +99,7 @@ struct EdgeTTSSynthesizer {
             }
         }
 
+        try broker.throwIfCancelled()
         guard fileManager.fileExists(atPath: outputURL.path) else {
             throw EdgeTTSError.outputMissing(outputURL)
         }

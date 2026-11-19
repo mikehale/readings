@@ -9,6 +9,7 @@ enum XTTSv2Error: LocalizedError {
     case lowMemory(freeGiB: Double, needGiB: Double)
     case processFailed(status: Int32, stderr: String)
     case outputMissing(URL)
+    case cancelled
 
     var errorDescription: String? {
         switch self {
@@ -30,6 +31,8 @@ enum XTTSv2Error: LocalizedError {
             return "XTTS failed (\(status)): \(detail.suffix(800))"
         case .outputMissing(let url):
             return "XTTS finished but no MP3 at \(url.path)."
+        case .cancelled:
+            return "Synthesis stopped."
         }
     }
 }
@@ -40,12 +43,18 @@ struct XTTSv2Synthesizer {
     var minFreeGiB: Double = 2.5
     var device: String = "cpu"
 
-    func synthesize(text: String, speakerWav: URL, to outputURL: URL) async throws {
+    func synthesize(
+        text: String,
+        speakerWav: URL,
+        to outputURL: URL,
+        broker: SynthesisProcessBroker
+    ) async throws {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw XTTSv2Error.emptyText }
         guard FileManager.default.fileExists(atPath: speakerWav.path) else {
             throw XTTSv2Error.speakerMissing(speakerWav)
         }
+        try broker.throwIfCancelled()
 
         let free = try Self.immediateFreeGiB()
         if free < minFreeGiB {
@@ -55,6 +64,7 @@ struct XTTSv2Synthesizer {
         let python = try Self.resolvePython()
         let script = try Self.resolveScript()
         let modelDir = try Self.resolveModelDir()
+        try broker.throwIfCancelled()
 
         try FileManager.default.createDirectory(
             at: outputURL.deletingLastPathComponent(),
@@ -96,16 +106,21 @@ struct XTTSv2Synthesizer {
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             do {
+                try broker.register(process)
                 try process.run()
             } catch {
+                broker.unregister(process)
                 continuation.resume(throwing: error)
                 return
             }
             process.terminationHandler = { finished in
+                broker.unregister(finished)
                 let err = String(data: stderrPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
                 let out = String(data: stdoutPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
                 let combined = (out + "\n" + err)
-                if finished.terminationStatus == 0 {
+                if broker.wasCancelled || finished.terminationReason == .uncaughtSignal {
+                    continuation.resume(throwing: XTTSv2Error.cancelled)
+                } else if finished.terminationStatus == 0 {
                     continuation.resume()
                 } else {
                     continuation.resume(
@@ -118,6 +133,7 @@ struct XTTSv2Synthesizer {
             }
         }
 
+        try broker.throwIfCancelled()
         guard FileManager.default.fileExists(atPath: outputURL.path) else {
             throw XTTSv2Error.outputMissing(outputURL)
         }
