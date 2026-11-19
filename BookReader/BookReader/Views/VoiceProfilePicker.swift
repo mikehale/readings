@@ -123,7 +123,7 @@ struct VoiceProfilePicker: View {
                 }
             }
 
-            Text("XTTS runs short-lived (RSS kill ~14 GiB). Prefer short speaker wavs.")
+            Text("XTTS Curt peaks ~4 GiB; killed if RSS exceeds ~9 GiB. Prefer short speaker wavs.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }

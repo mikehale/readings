@@ -39,7 +39,7 @@ enum VoiceProfile: Equatable, Hashable, Identifiable {
     var detail: String {
         switch self {
         case .xtts(let url):
-            return "XTTSv2 · short-lived · RSS kill 14 GiB · ref: \(url.lastPathComponent)"
+            return "XTTSv2 · short-lived · ~4 GiB peak · kill ~9 GiB · ref: \(url.lastPathComponent)"
         case .onlineAndrew:
             return "edge-tts · en-US-AndrewNeural · MP3"
         case .offlineKokoro(let voice):

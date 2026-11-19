@@ -17,7 +17,8 @@ import time
 from pathlib import Path
 
 GIB = 2**30
-RSS_KILL_GIB = 14.0
+# XTTS Curt peak ~4 GiB; keep headroom but below Chatterbox's 14 GiB ceiling.
+RSS_KILL_GIB = 9.0
 
 
 def immediate_free_gib() -> float:

@@ -24,7 +24,11 @@ enum XTTSv2Error: LocalizedError {
         case .emptyText:
             return "No text to synthesize."
         case .lowMemory(let free, let need):
-            return String(format: "Aborting XTTS: only %.1f GiB free (need ≥ %.1f GiB).", free, need)
+            return String(
+                format: "Not enough free memory to start XTTS Curt (%.1f GiB free; need ≥ %.1f GiB to begin). Peak use is ~4 GiB; the process is killed if it exceeds ~9 GiB. Free some RAM or switch to Andrew (online).",
+                free,
+                need
+            )
         case .processFailed(let status, let stderr):
             let detail = stderr.trimmingCharacters(in: .whitespacesAndNewlines)
             if detail.isEmpty { return "XTTS failed with exit \(status)." }
@@ -38,9 +42,14 @@ enum XTTSv2Error: LocalizedError {
 }
 
 /// Short-lived Coqui XTTSv2 synth via ebook2audiobook env + RSS-kill helper.
+///
+/// Curt peaks ~4 GiB in hillclimb; macOS “immediate free” is often modest even when
+/// the job will fit. Keep a low start gate and rely on RSS kill (~9 GiB) — not the
+/// Chatterbox 14 GiB ceiling.
 struct XTTSv2Synthesizer {
-    var rssKillGiB: Double = 14
-    var minFreeGiB: Double = 2.5
+    var rssKillGiB: Double = 9
+    /// Soft start gate only (immediate free pages). Kill limit protects the machine.
+    var minFreeGiB: Double = 0.75
     var device: String = "cpu"
 
     func synthesize(

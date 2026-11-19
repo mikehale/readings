@@ -70,7 +70,7 @@ Sidebar **Voice** control:
 
 | Backend | Behavior |
 |---------|----------|
-| **XTTS Curt** (default HQ) | Coqui XTTSv2 via short-lived `run_xtts_guarded.py` (ebook2audiobook Python + model). RSS kill ~14 GiB; aborts if free RAM is low. Speaker wav from library (Curt by default). |
+| **XTTS Curt** (default HQ) | Coqui XTTSv2 via short-lived `run_xtts_guarded.py` (ebook2audiobook Python + model). Soft start gate (~0.75 GiB immediate free); RSS kill ~9 GiB (Curt peaks ~4 GiB). Speaker wav from library (Curt by default). |
 | **Andrew** | Working online path via `edge-tts` / `en-US-AndrewNeural` |
 | **Kokoro** | Reserved; not wired yet |
 
