@@ -13,33 +13,15 @@ struct VoiceProfilePicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Voice")
+            Text("Voice · XTTS Curt")
                 .font(.headline)
-
-            Picker("Backend", selection: Binding(
-                get: { store.selectedBackend },
-                set: { store.selectBackend($0) }
-            )) {
-                ForEach(VoiceReferenceStore.BackendKind.allCases) { kind in
-                    Text(kind.label).tag(kind)
-                }
-            }
-            .pickerStyle(.segmented)
-            .disabled(isSynthesizing)
-            .controlSize(.small)
 
             Text(store.selectedProfile.detail)
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            if store.selectedBackend == .xttsHQ {
-                samplesSection
-                librarySection
-            } else if store.selectedBackend == .offlineKokoro {
-                Text("Kokoro ONNX (`am_michael`) later. Use XTTS Curt for HQ or Andrew online.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            samplesSection
+            librarySection
 
             if let statusNote {
                 Text(statusNote)
@@ -48,6 +30,9 @@ struct VoiceProfilePicker: View {
             }
         }
         .padding(.vertical, 4)
+        .onAppear {
+            store.selectBackend(.xttsHQ)
+        }
     }
 
     private var samplesSection: some View {
@@ -123,7 +108,7 @@ struct VoiceProfilePicker: View {
                 }
             }
 
-            Text("XTTS Curt peaks ~4 GiB; killed if RSS exceeds ~9 GiB. Prefer short speaker wavs.")
+            Text("HQ path is XTTS Curt only. No free-RAM start gate; killed if RSS exceeds ~9 GiB (peaks ~4 GiB).")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }

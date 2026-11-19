@@ -56,27 +56,22 @@ Signing is set to ad-hoc (`CODE_SIGN_IDENTITY = "-"`) for personal local runs. A
 1. **Open PDF…** (⌘O) or drag a PDF onto the window (works on the empty state and after a book is open).
 2. Confirm title + page count in the sidebar; chapters come from `PDFOutline` (or a single **Full book** chapter if there is no outline).
 3. Select a chapter → text preview (first ~2,500 characters) + word/character counts.
-4. In the sidebar **Voice** picker, leave **Andrew (online)** selected for working synth, or prepare a clone ref (below).
+4. In the sidebar **Voice** section, preview/Use **Curt** (or another sample) and Synthesize.
 5. **Synthesize MP3** → writes  
    `~/Movies/BookReader/<BookTitle>/<ChapterTitle>.mp3`  
    (falls back to `~/Library/Application Support/BookReader/Audio/` if Movies is unavailable).
-6. **Play / Pause** the generated chapter in-app.
+6. **Play / Pause** the generated chapter in-app. Use **Stop** to cancel in-flight synth.
 
-Online ship voice remains **`en-US-AndrewNeural`**. Output format is **MP3**. Extracted chapter text is always cleaned (`ChapterTextCleaner`) before preview/TTS.
+HQ voice is **XTTSv2 Curt**. Output format is **MP3**. Extracted chapter text is always cleaned (`ChapterTextCleaner`) before preview/TTS.
 
-## Voice picker (XTTS Curt HQ)
+## Voice picker (XTTS Curt only)
 
-Sidebar **Voice** control:
+HQ path is **XTTSv2 Curt** (Andrew / Kokoro removed from the UI).
 
-| Backend | Behavior |
-|---------|----------|
-| **XTTS Curt** (default HQ) | Coqui XTTSv2 via short-lived `run_xtts_guarded.py` (ebook2audiobook Python + model). Soft start gate (~0.75 GiB immediate free); RSS kill ~9 GiB (Curt peaks ~4 GiB). Speaker wav from library (Curt by default). |
-| **Andrew** | Working online path via `edge-tts` / `en-US-AndrewNeural` |
-| **Kokoro** | Reserved; not wired yet |
-
-Bundled samples (preview + **Use** copies into your library): **Curt**, **Neil Gaiman**, **Ana Florence** (from ebook2audiobook `voices/`).
-
-Library path: `~/Library/Application Support/BookReader/VoiceRefs/`
+- Coqui XTTSv2 via short-lived `run_xtts_guarded.py` (ebook2audiobook Python + model)
+- **No free-RAM start gate**; RSS kill ~9 GiB (Curt peaks ~4 GiB)
+- Bundled samples (preview + **Use** → library): **Curt**, **Neil Gaiman**, **Ana Florence**
+- Library: `~/Library/Application Support/BookReader/VoiceRefs/`
 
 Requires local ebook2audiobook install with `python_env` and XTTS-v2 weights under `models/tts/models--coqui--XTTS-v2/`. Optional overrides: `BOOKREADER_E2A_PYTHON`, `BOOKREADER_XTTS_MODEL`.
 

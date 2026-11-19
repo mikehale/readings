@@ -7,20 +7,13 @@ final class VoiceReferenceStore: ObservableObject {
     @Published var selectedReferenceID: UUID?
     @Published var selectedBackend: BackendKind = .xttsHQ
 
+    /// Only XTTS Curt is offered in the UI (Andrew / Kokoro removed).
     enum BackendKind: String, CaseIterable, Identifiable {
         case xttsHQ
-        case onlineAndrew
-        case offlineKokoro
 
         var id: String { rawValue }
 
-        var label: String {
-            switch self {
-            case .xttsHQ: return "XTTS Curt"
-            case .onlineAndrew: return "Andrew"
-            case .offlineKokoro: return "Kokoro"
-            }
-        }
+        var label: String { "XTTS Curt" }
     }
 
     private let fileManager: FileManager
@@ -53,20 +46,18 @@ final class VoiceReferenceStore: ObservableObject {
     }
 
     var selectedProfile: VoiceProfile {
-        switch selectedBackend {
-        case .xttsHQ:
-            if let ref = selectedReference {
-                return .xtts(speakerWav: fileURL(for: ref))
-            }
-            if let curt = BundledVoiceSample.catalog.first(where: \.isDefaultHQ)?.resourceURL {
-                return .xtts(speakerWav: curt)
-            }
-            return .onlineAndrew
-        case .onlineAndrew:
-            return .onlineAndrew
-        case .offlineKokoro:
-            return .offlineKokoro(voice: VoiceProfile.defaultKokoroVoice)
+        selectedBackend = .xttsHQ
+        if let ref = selectedReference {
+            return .xtts(speakerWav: fileURL(for: ref))
         }
+        if let curt = BundledVoiceSample.catalog.first(where: \.isDefaultHQ)?.resourceURL {
+            return .xtts(speakerWav: curt)
+        }
+        // Last resort: still XTTS with first library file if somehow present.
+        if let first = references.first {
+            return .xtts(speakerWav: fileURL(for: first))
+        }
+        return .xtts(speakerWav: rootURL.appendingPathComponent("Curt.wav"))
     }
 
     func fileURL(for reference: SavedVoiceReference) -> URL {
@@ -164,9 +155,8 @@ final class VoiceReferenceStore: ObservableObject {
         }
         if let data = try? Data(contentsOf: selectionURL),
            let selection = try? JSONDecoder().decode(SelectionState.self, from: data) {
-            // Migrate old narratorClone → xttsHQ
-            let raw = selection.backend == "narratorClone" ? BackendKind.xttsHQ.rawValue : selection.backend
-            selectedBackend = BackendKind(rawValue: raw) ?? .xttsHQ
+            // Force XTTS HQ; ignore legacy Andrew / Kokoro / clone selections.
+            selectedBackend = .xttsHQ
             selectedReferenceID = selection.referenceID
         }
         if selectedReferenceID == nil {

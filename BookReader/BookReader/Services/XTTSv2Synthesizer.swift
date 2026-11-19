@@ -6,7 +6,6 @@ enum XTTSv2Error: LocalizedError {
     case modelNotFound
     case speakerMissing(URL)
     case emptyText
-    case lowMemory(freeGiB: Double, needGiB: Double)
     case processFailed(status: Int32, stderr: String)
     case outputMissing(URL)
     case cancelled
@@ -23,15 +22,13 @@ enum XTTSv2Error: LocalizedError {
             return "Speaker wav missing: \(url.path)"
         case .emptyText:
             return "No text to synthesize."
-        case .lowMemory(let free, let need):
-            return String(
-                format: "Not enough free memory to start XTTS Curt (%.1f GiB free; need ≥ %.1f GiB to begin). Peak use is ~4 GiB; the process is killed if it exceeds ~9 GiB. Free some RAM or switch to Andrew (online).",
-                free,
-                need
-            )
         case .processFailed(let status, let stderr):
             let detail = stderr.trimmingCharacters(in: .whitespacesAndNewlines)
             if detail.isEmpty { return "XTTS failed with exit \(status)." }
+            // Surface RSS-guard aborts clearly when the CLI is killed for memory.
+            if detail.contains("GUARD ABORT") || detail.lowercased().contains("rss") {
+                return "XTTS Curt was stopped after exceeding the ~9 GiB memory limit (typical peak ~4 GiB). Free some RAM and retry. \(detail.suffix(400))"
+            }
             return "XTTS failed (\(status)): \(detail.suffix(800))"
         case .outputMissing(let url):
             return "XTTS finished but no MP3 at \(url.path)."
@@ -43,13 +40,10 @@ enum XTTSv2Error: LocalizedError {
 
 /// Short-lived Coqui XTTSv2 synth via ebook2audiobook env + RSS-kill helper.
 ///
-/// Curt peaks ~4 GiB in hillclimb; macOS “immediate free” is often modest even when
-/// the job will fit. Keep a low start gate and rely on RSS kill (~9 GiB) — not the
-/// Chatterbox 14 GiB ceiling.
+/// Curt peaks ~4 GiB; macOS “immediate free” is a poor start gate (often &lt;1 GiB
+/// even when the job will fit). Skip free-RAM preflight and rely on RSS kill (~9 GiB).
 struct XTTSv2Synthesizer {
     var rssKillGiB: Double = 9
-    /// Soft start gate only (immediate free pages). Kill limit protects the machine.
-    var minFreeGiB: Double = 0.75
     var device: String = "cpu"
 
     func synthesize(
@@ -64,11 +58,6 @@ struct XTTSv2Synthesizer {
             throw XTTSv2Error.speakerMissing(speakerWav)
         }
         try broker.throwIfCancelled()
-
-        let free = try Self.immediateFreeGiB()
-        if free < minFreeGiB {
-            throw XTTSv2Error.lowMemory(freeGiB: free, needGiB: minFreeGiB)
-        }
 
         let python = try Self.resolvePython()
         let script = try Self.resolveScript()
@@ -98,7 +87,8 @@ struct XTTSv2Synthesizer {
             "--out", outputURL.path,
             "--device", device,
             "--rss-kill-gib", String(rssKillGiB),
-            "--min-free-gib", String(minFreeGiB),
+            // No start-time free-RAM gate for Curt; RSS killer is the safety net.
+            "--min-free-gib", "0",
             "--language", "en",
         ]
         process.environment = {
@@ -232,37 +222,5 @@ struct XTTSv2Synthesizer {
             }
         }
         throw XTTSv2Error.modelNotFound
-    }
-
-    static func immediateFreeGiB() throws -> Double {
-        // Match the Python guard: pagesize + vm_stat free/speculative/purgeable.
-        let pageData = try ProcessRunner.runCapture("/usr/bin/pagesize", arguments: [])
-        let page = Double(pageData.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 16384
-        let vm = try ProcessRunner.runCapture("/usr/bin/vm_stat", arguments: [])
-        func pages(_ label: String) -> Double {
-            let pattern = "\(label):\\s+(\\d+)"
-            guard let regex = try? NSRegularExpression(pattern: pattern),
-                  let match = regex.firstMatch(in: vm, range: NSRange(vm.startIndex..., in: vm)),
-                  let range = Range(match.range(at: 1), in: vm)
-            else { return 0 }
-            return (Double(vm[range]) ?? 0) * page
-        }
-        let freeBytes = pages("Pages free") + pages("Pages speculative") + pages("Pages purgeable")
-        return freeBytes / Double(1 << 30)
-    }
-}
-
-enum ProcessRunner {
-    static func runCapture(_ launchPath: String, arguments: [String]) throws -> String {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: launchPath)
-        process.arguments = arguments
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = Pipe()
-        try process.run()
-        process.waitUntilExit()
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        return String(data: data, encoding: .utf8) ?? ""
     }
 }
