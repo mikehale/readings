@@ -19,11 +19,23 @@ struct ChapterDetailView: View {
             header
             Divider()
             ScrollView {
-                Text(preview?.previewText ?? "Select a chapter to preview text.")
-                    .font(.body)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
+                Group {
+                    if preview == nil {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text("Extracting chapter text…")
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text(preview?.previewText ?? "Select a chapter to preview text.")
+                            .font(.body)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding()
             }
             Divider()
             controls

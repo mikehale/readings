@@ -9,6 +9,9 @@ final class BookReaderViewModel: ObservableObject {
     @Published var book: LoadedBook?
     @Published var selectedChapterID: BookChapter.ID?
     @Published var chapterPreview: ChapterTextPreview?
+    @Published var isOpeningBook = false
+    @Published var isLoadingPreview = false
+    @Published var openingProgress: String?
     @Published var isSynthesizing = false
     @Published var synthesisPhase: SynthesisPhase = .idle
     @Published var elapsedSeconds = 0
@@ -25,6 +28,10 @@ final class BookReaderViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var elapsedTimer: Timer?
     private var synthesisTask: Task<Void, Never>?
+    private var openTask: Task<Void, Never>?
+    private var previewTask: Task<Void, Never>?
+    private var securityScopedURL: URL?
+    private var securityScopedAccessActive = false
 
     init(
         voiceStore: VoiceReferenceStore,
@@ -66,44 +73,115 @@ final class BookReaderViewModel: ObservableObject {
         open(url: url)
     }
 
+    /// Open stays responsive: PDFKit load + outline + first-chapter extract run off the main actor.
     func open(url: URL) {
-        do {
-            let access = url.startAccessingSecurityScopedResource()
-            defer {
-                if access { url.stopAccessingSecurityScopedResource() }
-            }
+        openTask?.cancel()
+        previewTask?.cancel()
+        releaseSecurityScope()
 
-            let loaded = try PDFBookLoader.load(url: url)
-            document = loaded.document
-            book = loaded.book
-            selectedChapterID = loaded.book.chapters.first?.id
-            refreshPreview()
-            player.stop()
-            audioURLs = [:]
-            statusMessage = "Loaded \(loaded.book.pageCount) pages · \(loaded.book.chapters.count) chapters"
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
+        let access = url.startAccessingSecurityScopedResource()
+        if access {
+            securityScopedURL = url
+            securityScopedAccessActive = true
+        }
+
+        isOpeningBook = true
+        isLoadingPreview = false
+        openingProgress = "Opening PDF…"
+        errorMessage = nil
+        statusMessage = nil
+        chapterPreview = nil
+        player.stop()
+        audioURLs = [:]
+
+        openTask = Task { @MainActor in
+            do {
+                openingProgress = "Reading PDF & chapters…"
+                // PDFDocument(url:) + outline walk can stall the UI for large books if done on MainActor.
+                let loaded = try await Task.detached(priority: .userInitiated) {
+                    try PDFBookLoader.load(url: url)
+                }.value
+                try Task.checkCancellation()
+
+                document = loaded.document
+                book = loaded.book
+                selectedChapterID = loaded.book.chapters.first?.id
+                statusMessage = "Loaded \(loaded.book.pageCount) pages · \(loaded.book.chapters.count) chapters"
+                isOpeningBook = false
+                openingProgress = nil
+
+                await loadPreviewAsync(for: loaded.book.chapters.first?.id)
+            } catch is CancellationError {
+                isOpeningBook = false
+                openingProgress = nil
+            } catch {
+                isOpeningBook = false
+                openingProgress = nil
+                book = nil
+                document = nil
+                selectedChapterID = nil
+                chapterPreview = nil
+                errorMessage = error.localizedDescription
+                releaseSecurityScope()
+            }
+            openTask = nil
         }
     }
 
     func selectChapter(id: BookChapter.ID?) {
         selectedChapterID = id
-        refreshPreview()
         if let id, let url = audioURLs[id] {
             try? player.load(url: url)
         } else {
             player.stop()
         }
+        Task { await loadPreviewAsync(for: id) }
     }
 
-    func refreshPreview() {
-        guard let document, let chapter = selectedChapter else {
+    private func loadPreviewAsync(for chapterID: BookChapter.ID?) async {
+        previewTask?.cancel()
+        guard let document, let chapterID,
+              let chapter = book?.chapters.first(where: { $0.id == chapterID })
+        else {
             chapterPreview = nil
+            isLoadingPreview = false
             return
         }
-        let text = PDFBookLoader.text(for: chapter, in: document)
-        chapterPreview = ChapterTextPreview.make(from: text)
+
+        isLoadingPreview = true
+        openingProgress = "Extracting “\(chapter.title)”…"
+        let doc = document
+        previewTask = Task { @MainActor in
+            do {
+                let text = await Task.detached(priority: .userInitiated) {
+                    PDFBookLoader.text(for: chapter, in: doc)
+                }.value
+                try Task.checkCancellation()
+                // Ignore stale previews if selection changed mid-extract.
+                guard selectedChapterID == chapterID else { return }
+                chapterPreview = ChapterTextPreview.make(from: text)
+            } catch is CancellationError {
+                // superseded
+            } catch {
+                if selectedChapterID == chapterID {
+                    errorMessage = error.localizedDescription
+                }
+            }
+            if selectedChapterID == chapterID {
+                isLoadingPreview = false
+                openingProgress = nil
+            }
+            previewTask = nil
+        }
+        await previewTask?.value
+    }
+
+    private func releaseSecurityScope() {
+        if securityScopedAccessActive, let url = securityScopedURL {
+            url.stopAccessingSecurityScopedResource()
+        }
+        securityScopedAccessActive = false
+        securityScopedURL = nil
     }
 
     func synthesizeSelectedChapter() {
@@ -233,6 +311,8 @@ struct ContentView: View {
         Group {
             if let book = model.book {
                 reader(book)
+            } else if model.isOpeningBook {
+                openingPlaceholder
             } else {
                 DropZoneView(
                     onOpen: { model.openPanel() },
@@ -251,6 +331,11 @@ struct ContentView: View {
                     .strokeBorder(Color.accentColor, lineWidth: 3)
                     .padding(6)
                     .allowsHitTesting(false)
+            }
+        }
+        .overlay {
+            if model.isOpeningBook || model.isLoadingPreview {
+                loadingBanner
             }
         }
         // Window-wide PDF drop so Finder drags work even after a book is open.
@@ -348,8 +433,39 @@ struct ContentView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Open PDF…", action: model.openPanel)
+                    .disabled(model.isOpeningBook)
             }
         }
+    }
+
+    private var openingPlaceholder: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .controlSize(.large)
+            Text(model.openingProgress ?? "Opening PDF…")
+                .font(.title3)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var loadingBanner: some View {
+        VStack {
+            HStack(spacing: 10) {
+                ProgressView()
+                    .controlSize(.small)
+                Text(model.openingProgress ?? (model.isOpeningBook ? "Opening PDF…" : "Loading preview…"))
+                    .font(.caption)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(12)
+            Spacer()
+        }
+        .allowsHitTesting(false)
     }
 }
 
