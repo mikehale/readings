@@ -24,6 +24,11 @@
 		A10000000000000000000013 /* SpeechSynthesizing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* SpeechSynthesizing.swift */; };
 		A10000000000000000000014 /* VoiceReferenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* VoiceReferenceStore.swift */; };
 		A10000000000000000000015 /* VoiceProfilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* VoiceProfilePicker.swift */; };
+		A10000000000000000000016 /* XTTSv2Synthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* XTTSv2Synthesizer.swift */; };
+		A10000000000000000000017 /* Curt.wav in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* Curt.wav */; };
+		A10000000000000000000018 /* NeilGaiman.wav in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* NeilGaiman.wav */; };
+		A10000000000000000000019 /* AnaFlorence.wav in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* AnaFlorence.wav */; };
+		A1000000000000000000001A /* run_xtts_guarded.py in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001A /* run_xtts_guarded.py */; };
 		A1000000000000000000000D /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000D /* PDFKit.framework */; };
 		A1000000000000000000000E /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000E /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
@@ -46,6 +51,11 @@
 		A20000000000000000000013 /* SpeechSynthesizing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechSynthesizing.swift; sourceTree = "<group>"; };
 		A20000000000000000000014 /* VoiceReferenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceReferenceStore.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* VoiceProfilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceProfilePicker.swift; sourceTree = "<group>"; };
+		A20000000000000000000016 /* XTTSv2Synthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XTTSv2Synthesizer.swift; sourceTree = "<group>"; };
+		A20000000000000000000017 /* Curt.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Curt.wav; sourceTree = "<group>"; };
+		A20000000000000000000018 /* NeilGaiman.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = NeilGaiman.wav; sourceTree = "<group>"; };
+		A20000000000000000000019 /* AnaFlorence.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = AnaFlorence.wav; sourceTree = "<group>"; };
+		A2000000000000000000001A /* run_xtts_guarded.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = run_xtts_guarded.py; sourceTree = "<group>"; };
 		A2000000000000000000000D /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
 		A2000000000000000000000E /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A2000000000000000000000F /* BookReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BookReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -83,8 +93,36 @@
 				A40000000000000000000003 /* Models */,
 				A40000000000000000000004 /* Services */,
 				A40000000000000000000005 /* Views */,
+				A40000000000000000000008 /* Resources */,
 			);
 			path = BookReader;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000008 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A40000000000000000000009 /* VoiceSamples */,
+				A4000000000000000000000A /* Scripts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000009 /* VoiceSamples */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000017 /* Curt.wav */,
+				A20000000000000000000018 /* NeilGaiman.wav */,
+				A20000000000000000000019 /* AnaFlorence.wav */,
+			);
+			path = VoiceSamples;
+			sourceTree = "<group>";
+		};
+		A4000000000000000000000A /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000001A /* run_xtts_guarded.py */,
+			);
+			path = Scripts;
 			sourceTree = "<group>";
 		};
 		A40000000000000000000003 /* Models */ = {
@@ -108,6 +146,7 @@
 				A20000000000000000000009 /* ChapterAudioPlayer.swift */,
 				A20000000000000000000013 /* SpeechSynthesizing.swift */,
 				A20000000000000000000014 /* VoiceReferenceStore.swift */,
+				A20000000000000000000016 /* XTTSv2Synthesizer.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -198,6 +237,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000017 /* Curt.wav in Resources */,
+				A10000000000000000000018 /* NeilGaiman.wav in Resources */,
+				A10000000000000000000019 /* AnaFlorence.wav in Resources */,
+				A1000000000000000000001A /* run_xtts_guarded.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,6 +264,7 @@
 				A10000000000000000000009 /* ChapterAudioPlayer.swift in Sources */,
 				A10000000000000000000013 /* SpeechSynthesizing.swift in Sources */,
 				A10000000000000000000014 /* VoiceReferenceStore.swift in Sources */,
+				A10000000000000000000016 /* XTTSv2Synthesizer.swift in Sources */,
 				A1000000000000000000000A /* DropZoneView.swift in Sources */,
 				A1000000000000000000000B /* ChapterListView.swift in Sources */,
 				A1000000000000000000000C /* ChapterDetailView.swift in Sources */,

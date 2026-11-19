@@ -64,27 +64,25 @@ Signing is set to ad-hoc (`CODE_SIGN_IDENTITY = "-"`) for personal local runs. A
 
 Online ship voice remains **`en-US-AndrewNeural`**. Output format is **MP3**. Extracted chapter text is always cleaned (`ChapterTextCleaner`) before preview/TTS.
 
-## Voice picker (clone refs)
+## Voice picker (XTTS Curt HQ)
 
-Sidebar control selects the `VoiceProfile`:
+Sidebar **Voice** control:
 
-| Backend | Behavior now |
-|---------|----------------|
-| **Andrew (online)** | Working path via `edge-tts` |
-| **Kokoro offline** | Profile reserved; synth not wired yet |
-| **Narrator clone** | Pick/import a short **denoised** ref; Chatterbox CLI not wired yet (shows a clear error if you hit Synthesize) |
+| Backend | Behavior |
+|---------|----------|
+| **XTTS Curt** (default HQ) | Coqui XTTSv2 via short-lived `run_xtts_guarded.py` (ebook2audiobook Python + model). RSS kill ~14 GiB; aborts if free RAM is low. Speaker wav from library (Curt by default). |
+| **Andrew** | Working online path via `edge-tts` / `en-US-AndrewNeural` |
+| **Kokoro** | Reserved; not wired yet |
 
-References live under:
+Bundled samples (preview + **Use** copies into your library): **Curt**, **Neil Gaiman**, **Ana Florence** (from ebook2audiobook `voices/`).
 
-`~/Library/Application Support/BookReader/VoiceRefs/`
+Library path: `~/Library/Application Support/BookReader/VoiceRefs/`
 
-- **Import reference…** copies MP3/WAV/M4A into that folder and selects it.
-- On this development Mac, first launch may seed **Dune narrator (denoised 10s)** from the Project store hillclimb clip when that file is present.
-- Prefer Demucs-denoised short clips; do not keep full YouTube downloads (Project memory preference).
+Requires local ebook2audiobook install with `python_env` and XTTS-v2 weights under `models/tts/models--coqui--XTTS-v2/`. Optional overrides: `BOOKREADER_E2A_PYTHON`, `BOOKREADER_XTTS_MODEL`.
 
 ## Out of scope (this slice)
 
-Library UI, podcast `feed.xml` export, OCR for scanned PDFs, cloud/paid TTS APIs, full Chatterbox/Kokoro synth wiring, and any changes to the GitHub Pages site.
+Library UI, podcast `feed.xml` export, OCR, cloud TTS APIs, Kokoro/Chatterbox wiring, and GitHub Pages changes.
 
 ## Layout
 

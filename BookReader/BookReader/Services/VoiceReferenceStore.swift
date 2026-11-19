@@ -1,24 +1,24 @@
 import Foundation
 
-/// Persists short clone reference clips under Application Support/BookReader/VoiceRefs/.
+/// Persists speaker refs under Application Support/BookReader/VoiceRefs/.
 @MainActor
 final class VoiceReferenceStore: ObservableObject {
     @Published private(set) var references: [SavedVoiceReference] = []
     @Published var selectedReferenceID: UUID?
-    @Published var selectedBackend: BackendKind = .onlineAndrew
+    @Published var selectedBackend: BackendKind = .xttsHQ
 
     enum BackendKind: String, CaseIterable, Identifiable {
+        case xttsHQ
         case onlineAndrew
         case offlineKokoro
-        case narratorClone
 
         var id: String { rawValue }
 
         var label: String {
             switch self {
-            case .onlineAndrew: return "Andrew (online)"
-            case .offlineKokoro: return "Kokoro offline (soon)"
-            case .narratorClone: return "Narrator clone"
+            case .xttsHQ: return "XTTS Curt"
+            case .onlineAndrew: return "Andrew"
+            case .offlineKokoro: return "Kokoro"
             }
         }
     }
@@ -43,7 +43,7 @@ final class VoiceReferenceStore: ObservableObject {
         indexURL = rootURL.appendingPathComponent("index.json")
         selectionURL = rootURL.appendingPathComponent("selection.json")
         load()
-        seedDuneDenoisedIfNeeded()
+        seedBundledCurtIfNeeded()
         load()
     }
 
@@ -54,15 +54,18 @@ final class VoiceReferenceStore: ObservableObject {
 
     var selectedProfile: VoiceProfile {
         switch selectedBackend {
+        case .xttsHQ:
+            if let ref = selectedReference {
+                return .xtts(speakerWav: fileURL(for: ref))
+            }
+            if let curt = BundledVoiceSample.catalog.first(where: \.isDefaultHQ)?.resourceURL {
+                return .xtts(speakerWav: curt)
+            }
+            return .onlineAndrew
         case .onlineAndrew:
             return .onlineAndrew
         case .offlineKokoro:
             return .offlineKokoro(voice: VoiceProfile.defaultKokoroVoice)
-        case .narratorClone:
-            guard let ref = selectedReference else {
-                return .onlineAndrew
-            }
-            return .clone(refAudioURL: fileURL(for: ref))
         }
     }
 
@@ -71,12 +74,17 @@ final class VoiceReferenceStore: ObservableObject {
     }
 
     @discardableResult
-    func importReference(from sourceURL: URL, name: String? = nil, isDenoised: Bool = true) throws -> SavedVoiceReference {
+    func importReference(
+        from sourceURL: URL,
+        name: String? = nil,
+        isDenoised: Bool = false,
+        engine: String = "xtts"
+    ) throws -> SavedVoiceReference {
         let access = sourceURL.startAccessingSecurityScopedResource()
         defer { if access { sourceURL.stopAccessingSecurityScopedResource() } }
 
         let ext = sourceURL.pathExtension.lowercased()
-        let safeExt = ["mp3", "wav", "m4a", "aiff", "caf"].contains(ext) ? ext : "mp3"
+        let safeExt = ["mp3", "wav", "m4a", "aiff", "caf"].contains(ext) ? ext : "wav"
         let display = (name?.trimmingCharacters(in: .whitespacesAndNewlines)).flatMap { $0.isEmpty ? nil : $0 }
             ?? sourceURL.deletingPathExtension().lastPathComponent
         let fileName = sanitize(display) + "-\(UUID().uuidString.prefix(8)).\(safeExt)"
@@ -89,19 +97,38 @@ final class VoiceReferenceStore: ObservableObject {
         let ref = SavedVoiceReference(
             name: display,
             fileName: fileName,
-            isDenoised: isDenoised
+            isDenoised: isDenoised,
+            engine: engine
         )
         references.append(ref)
         selectedReferenceID = ref.id
-        selectedBackend = .narratorClone
+        if engine == "xtts" {
+            selectedBackend = .xttsHQ
+        }
         try persist()
         return ref
+    }
+
+    /// Copy a bundled sample into the user library and select it for XTTS.
+    @discardableResult
+    func copySampleToLibrary(_ sample: BundledVoiceSample) throws -> SavedVoiceReference {
+        guard let url = sample.resourceURL else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        // Avoid duplicate Curt/etc. names: reuse existing if same name already present.
+        if let existing = references.first(where: { $0.name == sample.name }) {
+            selectedReferenceID = existing.id
+            selectedBackend = .xttsHQ
+            try persistSelection()
+            return existing
+        }
+        return try importReference(from: url, name: sample.name, isDenoised: false, engine: "xtts")
     }
 
     func selectReference(_ id: UUID?) {
         selectedReferenceID = id
         if id != nil {
-            selectedBackend = .narratorClone
+            selectedBackend = .xttsHQ
         }
         try? persistSelection()
     }
@@ -137,7 +164,9 @@ final class VoiceReferenceStore: ObservableObject {
         }
         if let data = try? Data(contentsOf: selectionURL),
            let selection = try? JSONDecoder().decode(SelectionState.self, from: data) {
-            selectedBackend = BackendKind(rawValue: selection.backend) ?? .onlineAndrew
+            // Migrate old narratorClone → xttsHQ
+            let raw = selection.backend == "narratorClone" ? BackendKind.xttsHQ.rawValue : selection.backend
+            selectedBackend = BackendKind(rawValue: raw) ?? .xttsHQ
             selectedReferenceID = selection.referenceID
         }
         if selectedReferenceID == nil {
@@ -160,29 +189,31 @@ final class VoiceReferenceStore: ObservableObject {
         try data.write(to: selectionURL, options: .atomic)
     }
 
-    /// Optional first-run seed from the Project store hillclimb denoised Dune clip when present on this Mac.
-    private func seedDuneDenoisedIfNeeded() {
-        guard references.isEmpty else { return }
-        let candidates = [
-            "/Users/mhale/Library/Application Support/Cursor/AgentStores/cursor_agent_stores/bc-947aaf02-cd76-4149-a374-008f3282ccbb/files/media/local-tts-hillclimb/01b-reference-dune-narrator-10s-denoised.mp3",
-            "/cursor/stores/bc-947aaf02-cd76-4149-a374-008f3282ccbb/media/local-tts-hillclimb/01b-reference-dune-narrator-10s-denoised.mp3",
-        ]
-        for path in candidates {
-            let url = URL(fileURLWithPath: path)
-            guard fileManager.fileExists(atPath: url.path) else { continue }
-            do {
-                _ = try importReference(
-                    from: url,
+    /// Ensure Curt (HQ default) is available; select XTTS on first empty library.
+    private func seedBundledCurtIfNeeded() {
+        let wasEmpty = references.isEmpty
+        if let curt = BundledVoiceSample.catalog.first(where: \.isDefaultHQ),
+           !references.contains(where: { $0.name == curt.name }) {
+            _ = try? copySampleToLibrary(curt)
+        } else if wasEmpty {
+            let dune = URL(
+                fileURLWithPath: "/Users/mhale/Library/Application Support/Cursor/AgentStores/cursor_agent_stores/bc-947aaf02-cd76-4149-a374-008f3282ccbb/files/media/local-tts-hillclimb/01b-reference-dune-narrator-10s-denoised.mp3"
+            )
+            if fileManager.fileExists(atPath: dune.path) {
+                _ = try? importReference(
+                    from: dune,
                     name: "Dune narrator (denoised 10s)",
-                    isDenoised: true
+                    isDenoised: true,
+                    engine: "xtts"
                 )
-                // Seed should not force clone backend as default synth — keep Andrew as ship path.
-                selectedBackend = .onlineAndrew
-                try? persistSelection()
-            } catch {
-                continue
             }
-            break
+        }
+        if wasEmpty || selectedBackend == .xttsHQ {
+            selectedBackend = .xttsHQ
+            if let curt = references.first(where: { $0.name == "Curt" }) {
+                selectedReferenceID = curt.id
+            }
+            try? persistSelection()
         }
     }
 

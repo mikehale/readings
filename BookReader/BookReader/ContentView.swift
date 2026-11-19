@@ -258,7 +258,7 @@ struct ContentView: View {
                     audioURL: model.selectedAudioURL,
                     isPlaying: model.player.isPlaying,
                     statusMessage: model.statusMessage,
-                    voiceSummary: model.voiceStore.selectedProfile.displayName,
+                    voiceSummary: model.voiceStore.selectedProfile.shortDisplayName,
                     onSynthesize: { model.synthesizeSelectedChapter() },
                     onTogglePlayback: { model.togglePlayback() }
                 )

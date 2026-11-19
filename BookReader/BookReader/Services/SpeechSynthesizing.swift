@@ -15,25 +15,32 @@ enum SpeechSynthesisError: LocalizedError {
         case .unsupportedProfile(let profile):
             return "Unsupported voice profile: \(profile.displayName)."
         case .cloneNotWired:
-            return "Narrator clone (Chatterbox) is selected, but the guarded clone CLI is not wired yet. Use Andrew (online) for now, or keep the reference ready for HQ synth."
+            return "Chatterbox clone is optional and not wired in this build. Use XTTS Curt (HQ) or Andrew (online)."
         case .kokoroNotWired:
-            return "Kokoro offline voice is not wired yet. Switch back to Andrew (online)."
+            return "Kokoro offline voice is not wired yet. Switch to XTTS Curt or Andrew."
         case .missingReference:
-            return "Choose or import a short denoised reference clip before using Narrator clone."
+            return "Choose a sample or import a speaker wav before synthesizing with XTTS."
         }
     }
 }
 
-/// Routes chapter jobs to the right short-lived backend. Never loads ML in-process.
+/// Routes chapter jobs to short-lived backends. Never loads ML in-process.
 struct SpeechSynthesisRouter: SpeechSynthesizing {
     private let edge: EdgeTTSSynthesizer
+    private let xtts: XTTSv2Synthesizer
 
-    init(edge: EdgeTTSSynthesizer = EdgeTTSSynthesizer()) {
+    init(
+        edge: EdgeTTSSynthesizer = EdgeTTSSynthesizer(),
+        xtts: XTTSv2Synthesizer = XTTSv2Synthesizer()
+    ) {
         self.edge = edge
+        self.xtts = xtts
     }
 
     func synthesize(text: String, profile: VoiceProfile, to outputURL: URL) async throws {
         switch profile {
+        case .xtts(let speaker):
+            try await xtts.synthesize(text: text, speakerWav: speaker, to: outputURL)
         case .onlineAndrew:
             try await edge.synthesize(text: text, to: outputURL)
         case .offlineKokoro:
@@ -42,7 +49,6 @@ struct SpeechSynthesisRouter: SpeechSynthesizing {
             guard FileManager.default.fileExists(atPath: refURL.path) else {
                 throw SpeechSynthesisError.missingReference
             }
-            // Stub: keep ref selected for when CloneSynthesizer lands (RAM-gated CLI).
             _ = refURL
             throw SpeechSynthesisError.cloneNotWired
         }
