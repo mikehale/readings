@@ -154,17 +154,23 @@ final class BookReaderViewModel: ObservableObject {
             isOpeningBook = false
             openingProgress = nil
             statusMessage = "Loaded \(opened.book.pageCount) pages · \(opened.book.chapters.count) chapters"
-            // Defer text extract: select first chapter only after open UI is up.
-            // Selection triggers preview load separately (spinner in detail, not blocking open).
+            // Show sidebar immediately; extract text only after a yield so SwiftUI can paint.
+            selectedChapterID = nil
+            chapterPreview = nil
             if let first = opened.book.chapters.first?.id {
-                selectChapter(id: first)
-            } else {
-                selectedChapterID = nil
-                chapterPreview = nil
+                Task { @MainActor in
+                    await Task.yield()
+                    guard self.openGeneration == expectedGeneration else { return }
+                    self.selectChapter(id: first)
+                }
             }
         case .failure(let error):
             isOpeningBook = false
             openingProgress = nil
+            if error is CancellationError {
+                statusMessage = "Open cancelled"
+                return
+            }
             book = nil
             selectedChapterID = nil
             chapterPreview = nil
@@ -382,6 +388,11 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .bookReaderOpenPDF)) { _ in
             model.openPanel()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .bookReaderOpenPDFAtURL)) { note in
+            if let url = note.object as? URL {
+                model.open(url: url)
+            }
         }
         .alert(
             "Error",

@@ -1,10 +1,12 @@
 import Foundation
 import PDFKit
 
-/// All PDFKit access runs on a dedicated serial queue — never awaited from the MainActor.
-/// Awaiting PDFKit from MainActor can freeze the UI (PDFKit often hops/syncs to the main run loop).
+/// All PDFKit access runs on a dedicated serial queue.
+/// Generation is updated under a lock from any thread — never via `queue.sync` from
+/// the MainActor (that deadlocks/stalls when PDFKit work is in flight).
 final class PDFSession: @unchecked Sendable {
     private let queue = DispatchQueue(label: "com.mikehale.BookReader.pdf", qos: .userInitiated)
+    private let lock = NSLock()
     private var document: PDFDocument?
     private var generation = 0
 
@@ -15,34 +17,75 @@ final class PDFSession: @unchecked Sendable {
 
     @discardableResult
     func beginOpen() -> Int {
-        queue.sync {
-            generation += 1
-            document = nil
-            return generation
-        }
+        lock.lock()
+        generation += 1
+        let next = generation
+        document = nil
+        lock.unlock()
+        return next
     }
 
-    func cancel() {
-        queue.async { [weak self] in
-            self?.generation += 1
-            self?.document = nil
-        }
+    func currentGeneration() -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return generation
     }
 
-    /// Load PDF + outline off the main thread. Calls `completion` on the main queue.
+    /// Load PDF + outline off the main thread. Always invokes `completion` on the main queue
+    /// (including cancellation), so the UI never sticks on a spinner.
     func open(url: URL, generation: Int, completion: @escaping (Result<OpenResult, Error>) -> Void) {
         queue.async { [weak self] in
-            guard let self else { return }
+            guard let self else {
+                DispatchQueue.main.async {
+                    completion(.failure(CancellationError()))
+                }
+                return
+            }
+
+            // Read bytes on the PDF queue first so PDFKit does not touch a security-scoped
+            // file URL from a background thread (can stall). Then build PDFDocument from data.
             let result: Result<OpenResult, Error>
             do {
-                let loaded = try PDFBookLoader.load(url: url)
-                guard generation == self.generation else { return }
-                self.document = loaded.document
-                result = .success(OpenResult(book: loaded.book, generation: generation))
+                guard self.isCurrent(generation) else {
+                    throw CancellationError()
+                }
+                let data = try Data(contentsOf: url, options: [.mappedIfSafe])
+                guard self.isCurrent(generation) else {
+                    throw CancellationError()
+                }
+                guard let document = PDFDocument(data: data) else {
+                    throw PDFBookLoaderError.unreadable
+                }
+                let pageCount = document.pageCount
+                guard pageCount > 0 else {
+                    throw PDFBookLoaderError.emptyDocument
+                }
+
+                let title = document.documentAttributes?[PDFDocumentAttribute.titleAttribute] as? String
+                let displayTitle = (title?.trimmingCharacters(in: .whitespacesAndNewlines))
+                    .flatMap { $0.isEmpty ? nil : $0 }
+                    ?? url.deletingPathExtension().lastPathComponent
+                let chapters = ChapterDetector.chapters(from: document)
+                let book = LoadedBook(
+                    url: url,
+                    title: displayTitle,
+                    pageCount: pageCount,
+                    chapters: chapters
+                )
+
+                guard self.isCurrent(generation) else {
+                    throw CancellationError()
+                }
+                self.lock.lock()
+                self.document = document
+                self.lock.unlock()
+                result = .success(OpenResult(book: book, generation: generation))
+            } catch is CancellationError {
+                result = .failure(CancellationError())
             } catch {
-                guard generation == self.generation else { return }
                 result = .failure(error)
             }
+
             DispatchQueue.main.async {
                 completion(result)
             }
@@ -57,19 +100,27 @@ final class PDFSession: @unchecked Sendable {
     ) {
         queue.async { [weak self] in
             guard let self else { return }
-            // Superseded open/cancel — drop silently (caller already moved on).
-            guard generation == self.generation else { return }
-            guard let document = self.document else {
+            guard self.isCurrent(generation) else { return }
+            self.lock.lock()
+            let document = self.document
+            self.lock.unlock()
+            guard let document else {
                 DispatchQueue.main.async {
                     completion(.failure(PDFBookLoaderError.unreadable))
                 }
                 return
             }
             let text = PDFBookLoader.text(for: chapter, in: document)
-            guard generation == self.generation else { return }
+            guard self.isCurrent(generation) else { return }
             DispatchQueue.main.async {
                 completion(.success(text))
             }
         }
+    }
+
+    private func isCurrent(_ generation: Int) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return self.generation == generation
     }
 }

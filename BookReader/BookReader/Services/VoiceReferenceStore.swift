@@ -45,8 +45,10 @@ final class VoiceReferenceStore: ObservableObject {
         return references.first { $0.id == selectedReferenceID } ?? references.first
     }
 
+    /// Pure getter — must not mutate `@Published` state. Doing so from SwiftUI `body`
+    /// (e.g. via `VoiceProfilePicker`) causes an infinite update loop and freezes the UI
+    /// as soon as the reader sidebar appears after opening a PDF.
     var selectedProfile: VoiceProfile {
-        selectedBackend = .xttsHQ
         if let ref = selectedReference {
             return .xtts(speakerWav: fileURL(for: ref))
         }
