@@ -1,0 +1,8 @@
+.DS_Store
+
+# BookReader local Xcode / Swift build output
+BookReader/build/
+BookReader/DerivedData/
+BookReader/.build/
+*.xcuserstate
+xcuserdata/
